@@ -180,14 +180,17 @@
         // Level 3: 上溯回退
         // 既无标签样式也无卡片语义，则逐层向上查找
         // 策略：优先找标题元素（H1-H6、A、P）或宽度 < 65% 屏宽的容器
-        // 最多走 5 层，避免走到 body
+        // 最多走 3 层，避免走到跨卡片的父容器
         // -------------------------------------------------------------
         let current = el;
-        for (let i = 0; i < 5 && current && current !== document.body; i++) {
+        for (let i = 0; i < 3 && current && current !== document.body; i++) {
             const r = current.getBoundingClientRect();
             const tag = current.tagName;
             if (r.width < vw * 0.65 || ['A', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P'].includes(tag)) {
-                return current;
+                // 防误杀：如果元素内包含多个独立卡片子元素，说明是容器，不返回
+                const cards = current.querySelectorAll('article, section, [class*="card"], [class*="item"], [class*="video"], li');
+                if (cards.length <= 1) return current;
+                break;
             }
             current = current.parentElement;
         }

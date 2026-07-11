@@ -155,6 +155,12 @@
         // 且尺寸合理（< 85% 屏幕宽），说明是新闻卡片/视频卡片
         // 典型场景：百度新闻中"华为"相关文章的卡片条目
         // -------------------------------------------------------------
+        function isPlayerContainer(el) {
+            const video = el.querySelector('video');
+            if (!video) return false;
+            const vr = video.getBoundingClientRect();
+            return vr.width > 100 && vr.height > 50;
+        }
         const cardSelectors = [
             'article', 'section',
             '[class*="card"]', '[class*="item"]', '[class*="post"]',
@@ -167,6 +173,8 @@
         for (const sel of cardSelectors) {
             const match = el.closest(sel);
             if (match) {
+                // 跳过视频播放器容器（防止误模糊播放器）
+                if (isPlayerContainer(match)) continue;
                 const mr = match.getBoundingClientRect();
                 // 防止匹配到整个页面布局容器（完整宽度响应式容器）
                 if (mr.width < vw * 0.85 && mr.height < vh * 0.5) {
@@ -184,6 +192,8 @@
         // -------------------------------------------------------------
         let current = el;
         for (let i = 0; i < 3 && current && current !== document.body; i++) {
+            // 跳过视频播放器容器
+            if (isPlayerContainer(current)) { current = current.parentElement; continue; }
             const r = current.getBoundingClientRect();
             const tag = current.tagName;
             if (r.width < vw * 0.65 || ['A', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P'].includes(tag)) {

@@ -279,6 +279,16 @@
      *
      * 每次扫描都会重新走全量文本节点（性能安全，已处理元素会跳过）
      */
+    /**
+     * 排除区域：视频播放器内部（弹幕层、字幕、控件等）不参与关键词扫描
+     * 避免命中一条弹幕后连带模糊整个弹幕层/播放器
+     */
+    const EXCLUDE_SELECTOR = [
+        'video', '[class*="danmaku"]', '[class*="danmu"]', '[class*="dm-"]',
+        '[class*="subtitle"]', '[class*="player"]',
+        '.bpx-player-container', '#bilibili-player'
+    ].join(',');
+
     function scanPage() {
         if (!keywords.length) return;
 
@@ -288,6 +298,7 @@
             const parent = node.parentElement;
             if (!parent || parent === document.body || parent.closest('[data-nb-processed]')) continue;
             if (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE' || parent.tagName === 'META') continue;
+            if (parent.closest(EXCLUDE_SELECTOR)) continue;
             if (!node.textContent.trim()) continue;
             if (!matchesKeyword(node.textContent)) continue;
 
